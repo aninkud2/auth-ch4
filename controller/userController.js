@@ -158,3 +158,18 @@ exports.updateUser = async (req, res)=>{
       return  res.status(500).json(error.message)
     }
 }
+
+
+
+exports.makeAdmin =async(req,res)=>{
+try {
+  const newAdmin=  await userModel.findByIdAndUpdate(req.params.id,{isAdmin:true})
+    res.status(200).json({
+        message:`${newAdmin.firstName} is now an admin`
+    })
+
+
+} catch (error) {
+    res.status(500).json(error.message)
+}
+}

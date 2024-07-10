@@ -1,9 +1,9 @@
 const router=require("express").Router()
 
-const {createUser,verifyEmail,newEmail, logIn, updateUser}=require("../controller/userController")
+const {createUser,verifyEmail,newEmail, logIn, updateUser,makeAdmin}=require("../controller/userController")
 
 const {authenticator}= require("../helpers/authentication")
-const {authorization}=require("../helpers/authorization")
+const {authorization,authorizationSuper}=require("../helpers/authorization")
 
 router.post("/createuser",createUser)
 
@@ -12,7 +12,7 @@ router.get("/verify/:id/:token",verifyEmail)
 router.get("/newemail/:id",newEmail)
 router.patch("/updateUser/:id",authorization, updateUser)
 
-
+router.put("/makeadmin/:id",authorizationSuper,makeAdmin)
 
 router.post("/login",logIn)
 
