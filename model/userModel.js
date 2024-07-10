@@ -10,9 +10,14 @@ lastName:String,
 passWord:String,
 
 email:{type:String},
+ 
+phoneNumber:String,
 
-phoneNumber:String
+isAdmin:{type:Boolean,default:false},
 
+isSuperAdmin:{type:Boolean,default:false},
+
+isVerified:{type:Boolean,default:false}
 
 },{timestamps:true})
 
