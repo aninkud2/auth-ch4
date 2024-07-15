@@ -4,8 +4,9 @@ const {createUser,verifyEmail,newEmail, logIn, updateUser,makeAdmin}=require("..
 
 const {authenticator}= require("../helpers/authentication")
 const {authorization,authorizationSuper}=require("../helpers/authorization")
+const{uploader} =require("../helpers/multer")
 
-router.post("/createuser",createUser)
+router.post("/createuser",uploader.single("profilePicture"),createUser)
 
 router.get("/verify/:id/:token",verifyEmail)
 
@@ -17,8 +18,7 @@ router.put("/makeadmin/:id",authorizationSuper,makeAdmin)
 router.post("/login",logIn)
 
 
-router.get("/",authenticator,(req,res)=>{
-    res.status(200).json(`Welcome to my api ${req.user}`)
+router.get("/",authenticator,(req,res)=>{ res.status(200).json(`Welcome to my api ${req.user}`)
 })
 
 

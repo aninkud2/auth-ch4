@@ -17,7 +17,9 @@ isAdmin:{type:Boolean,default:false},
 
 isSuperAdmin:{type:Boolean,default:false},
 
-isVerified:{type:Boolean,default:false}
+isVerified:{type:Boolean,default:false},
+
+profilePicture:{pictureUrl:String,pictureId:String}
 
 },{timestamps:true})
 

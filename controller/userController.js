@@ -4,12 +4,11 @@ const bcrypt=require("bcryptjs")
 require("dotenv").config()
 const html=require("../helpers/html.js")
 const jwt= require("jsonwebtoken")
-
+const cloudinary= require("../helpers/cloudinary.js")
 exports.createUser =async (req,res)=>{
 
     try {
 const{firstName,lastName,email,phoneNumber,passWord}=req.body
-
 const checkIfAnEmailExists= await userModel.findOne({email:email.toLowerCase()})
 
 if(checkIfAnEmailExists){
@@ -19,11 +18,22 @@ const bcryptpassword=await bcrypt.genSaltSync(10)
 
 const hashedPassword =await bcrypt.hashSync(passWord,bcryptpassword)
 
+console.log(req.file)
+const cloudProfile=await cloudinary.uploader.upload(req.file.path,{folder:" users dp"},(err)=>{
+    if(err){
+        return res.status(400).json(err.message)
+    }
+})
+
 const data={firstName,
     lastName,
     email:email.toLowerCase(),
     phoneNumber,
-    passWord:hashedPassword
+    passWord:hashedPassword,
+    profilePicture:{
+        pictureId:cloudProfile.public_id,
+        pictureUrl:cloudProfile.secure_url
+    }
 }
 
 const createdUser = await userModel.create(data)

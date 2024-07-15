@@ -5,7 +5,19 @@ const app=express()
 app.use(express.json())
 
 const router=require("./router/userRouter")
+const multer =require("multer")
 app.use("/api/v1/",router)
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+    
+            return res.status(400).json(err.message);
+        }
+       else if(err) {return res.status(400).json({ error: err.message });
+    }
+
+next()
+});
+
 const url=process.env.mongodbUrl
 const port=process.env.port
 
