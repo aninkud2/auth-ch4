@@ -5,6 +5,8 @@ require("dotenv").config()
 const html=require("../helpers/html.js")
 const jwt= require("jsonwebtoken")
 const cloudinary= require("../helpers/cloudinary.js")
+
+const fs = require("fs")
 exports.createUser =async (req,res)=>{
 
     try {
@@ -18,7 +20,9 @@ const bcryptpassword=await bcrypt.genSaltSync(10)
 
 const hashedPassword =await bcrypt.hashSync(passWord,bcryptpassword)
 
-console.log(req.file)
+if(!req.file){
+   return  res.status(400).json("Kindly upload your profile picture")
+}
 const cloudProfile=await cloudinary.uploader.upload(req.file.path,{folder:" users dp"},(err)=>{
     if(err){
         return res.status(400).json(err.message)
@@ -38,10 +42,14 @@ const data={firstName,
 
 const createdUser = await userModel.create(data)
 
+fs.unlink(req.file.path,(err)=>{
+    if(err){
+        return res.status(400).json("unable to delete users profile"+err)
+    }
+})
 const userToken = jwt.sign({id:createdUser._id,email:createdUser.email},process.env.jwtSecret,{expiresIn: "3 Minutes"})
 const verifyLink=  `${req.protocol}://${req.get("host")}/api/v1/verify/${createdUser._id}/${userToken}`
-console.log(req.protocol)
-console.log(req.get("host"))
+
 sendMail({ subject : `Kindly Verify your mail`,
     email:createdUser.email,
     html:html(verifyLink,createdUser.firstName)
@@ -130,7 +138,7 @@ try {
         return res.status(400).json("password in correct")
     }
 
-    const user=await jwt.sign({firstName:findWithEmail.firstName,},process.env.jwtSecret,{expiresIn: "2 minutes"})
+    const user=await jwt.sign({id:findWithEmail._id,},process.env.jwtSecret,{expiresIn: "7 minutes"})
 
 
 const{isVerified ,phoneNumber,createdAt,updatedAt,__v,_id,passWord, ...others}=findWithEmail._doc
@@ -182,4 +190,59 @@ try {
 } catch (error) {
     res.status(500).json(error.message)
 }
+}
+
+
+
+exports.updatePicture=async(req,res)=>{
+try {
+const userToken= req.headers.authorization.split(" ")[1]
+if(!req.file){
+    return res.status(400).json("no profile picture selected")
+}
+await jwt.verify(userToken,process.env.jwtSecret,async(err,newUser)=>{
+    if(err){
+        return res.status(400).json("could not authenticate")
+    }else {
+
+       req.user=newUser.id 
+
+    
+    const cloudImage=await cloudinary.uploader.upload(req.file.path,{folder:" users dp"},(err,data)=>{
+        if(err){
+          console.log(err)
+        }
+    // cloudinary.uploader.destroy()
+        return data
+    })
+    const userId=newUser.id
+    
+    console.log(userId)
+
+const pictureUpdate= {profilePicture:{
+    pictureId:cloudImage.public_id,
+
+    pictureUrl:cloudImage.secure_url 
+}}
+
+const user= await userModel.findById(userId)
+const formerImageId=user.profilePicture.pictureId
+await cloudinary.uploader.destroy(formerImageId)
+
+    const checkUser= await userModel.findByIdAndUpdate(userId,pictureUpdate,{new:true})
+    
+    
+    return res.status(200).json({message :"user image sucessfully changed"})
+
+
+
+    }
+})
+
+    
+} catch (error) {
+ res.status(500).json(error.message)   
+}
+
+
 }

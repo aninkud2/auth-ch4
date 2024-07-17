@@ -20,7 +20,7 @@ filename:function(req,file,cb){
 const uploader=multer({storage,
     fileFilter:function(req,file,cb){
         const extension= path.extname( file.originalname )
-console.log(extension)
+
         if(extension == ".png" ||  extension == ".jpg" || extension ==".jpeg") {
             cb (null,true)
         }else{
